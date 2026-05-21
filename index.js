@@ -23,12 +23,18 @@ async function run() {
     await client.connect();
     const db = client.db('ideavault')
     const ideascollection = db.collection('ideas')
+    const myideascollection = db.collection('my-ideas')
 
-    app.post('/ideas', async (req, res) => {
+    app.post('/my-ideas', async (req, res) => {
       const ideaData = req.body
-      const result = await ideascollection.insertOne(ideaData)
+      const result = await myideascollection.insertOne(ideaData)
       res.json(result)
     })
+
+    app.get('/my-ideas', async (req, res) => {
+    const result = await myideascollection.find().toArray()
+    res.json(result)
+})
 
     app.get('/ideas', async (req, res) => {
       const result = await ideascollection.find().toArray()
