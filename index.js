@@ -6,14 +6,14 @@ dotenv.config()
 
 const uri = process.env.MONGODB_URI
 const app = express()
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 5000
 app.use(cors())
 app.use(express.json())
 
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
-    strict: true,
+    strict: false,
     deprecationErrors: true,
   }
 });
@@ -25,42 +25,91 @@ async function run() {
     const ideascollection = db.collection('ideas')
     const myideascollection = db.collection('my-ideas')
 
+
+
     app.post('/my-ideas', async (req, res) => {
-      const ideaData = req.body
-      const result = await myideascollection.insertOne(ideaData)
-      res.json(result)
+      
+        const ideaData = req.body
+       
+        const result = await myideascollection.insertOne(ideaData)
+        res.json(result)
+    
     })
 
     app.get('/my-ideas', async (req, res) => {
-    const result = await myideascollection.find().toArray()
-    res.json(result)
-})
+     
+        const result = await myideascollection.find().toArray()
+        res.json(result)
+      
+      
+      
+    })
+
+    app.get('/my-ideas/:id', async (req, res) => {
+     
+        const { id } = req.params
+        const result = await myideascollection.findOne({ _id: new ObjectId(id) })
+        if (!result) return res.status(404).json({ error: 'Not found' })
+        res.json(result)
+     
+    })
+
+    app.patch('/my-ideas/:id', async (req, res) => {
+     
+        const { id } = req.params
+        const updatedData = req.body
+        const result = await myideascollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: updatedData }
+        )
+        res.json(result)
+   
+    })
+
+    app.delete('/my-ideas/:id', async (req, res) => {
+    
+        const { id } = req.params
+        const result = await myideascollection.deleteOne({ _id: new ObjectId(id) })
+        res.json(result)
+     
+    })
+
+   
 
     app.get('/ideas', async (req, res) => {
-      const result = await ideascollection.find().toArray()
-      res.json(result)
+    
+        const result = await ideascollection.find().toArray()
+        res.json(result)
+    
     })
 
     app.get('/ideas/:id', async (req, res) => {
-      const { id } = req.params
-      const result = await ideascollection.findOne({ _id: new ObjectId(id) })
-      res.json(result)
+     
+        const { id } = req.params
+        const result = await ideascollection.findOne({ _id: new ObjectId(id) })
+        if (!result) return res.status(404).json({ error: 'Not found' })
+        res.json(result)
+     
     })
 
     app.patch('/ideas/:id', async (req, res) => {
-      const { id } = req.params
-      const updatedData = req.body
-      const result = await ideascollection.updateOne(
-        { _id: new ObjectId(id) },
-        { $set: updatedData }
-      )
-      res.json(result)
+    
+        const { id } = req.params
+        const updatedData = req.body
+        const result = await ideascollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: updatedData }
+        )
+        res.json(result)
+     
     })
 
     app.delete('/ideas/:id', async (req, res) => {
-      const { id } = req.params
-      const result = await ideascollection.deleteOne({ _id: new ObjectId(id) })
-      res.json(result)
+    
+        const { id } = req.params
+        const result = await ideascollection.deleteOne({ _id: new ObjectId(id) })
+        res.json(result)
+    
     })
 
     await client.db("admin").command({ ping: 1 });
